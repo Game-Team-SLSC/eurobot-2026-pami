@@ -1,5 +1,7 @@
 # eurobot-2026-pami
 
+[![PlatformIO CI](https://github.com/Game-Team-SLSC/eurobot-2026-pami/actions/workflows/pio.yml/badge.svg)](https://github.com/Game-Team-SLSC/eurobot-2026-pami/actions/workflows/pio.yml)
+
 This repo contains the source code for the standard PAMIs of Game Team 2026
 
 # Usage

@@ -3,7 +3,7 @@
 #include <ESP32Servo.h>
 
 // ============================================
-// CONFIGURATION DES PINS (D-Série selon schéma)
+// CONFIGURATION DES PINS
 // ============================================
 
 // MOTEUR 1 (U2)
@@ -21,43 +21,37 @@
 #define TMC2_TX           D7
 
 // SERVO
-#define SERVO_PIN         D10   // D8 on XIAO ESP32S3 (adjust if needed)
-#define MAG_DETECT_PIN    GPIO_NUM_13   // D7 on XIAO ESP32S3
+#define SERVO_PIN         D10
+#define MAG_DETECT_PIN    GPIO_NUM_13
 
 // CAPTEUR ULTRASONIC HC-SR04
-#define US_TRIG_PIN       GPIO_NUM_12   // Trigger pin (adjust as needed)
-#define US_ECHO_PIN       GPIO_NUM_11   // Echo pin (adjust as needed)
-#define COLOR_SWITCH_PIN  GPIO_NUM_42   // D15 on XIAO ESP32S3
+#define US_TRIG_PIN       GPIO_NUM_12
+#define US_ECHO_PIN       GPIO_NUM_11
+#define COLOR_SWITCH_PIN  GPIO_NUM_42
 
-#define US_MAX_DISTANCE   300           // Max distance in cm
+#define US_MAX_DISTANCE   300 // cm
 
 #define R_SENSE           0.11f
 #define MICROSTEPS        4
 #define RPM               150
-#define MOTOR_STEPS       200  // Pas par révolution du moteur (1.8° = 200 pas)
+#define MOTOR_STEPS       200  // =1.8°/step
 
 // ============================================
 // OBJETS MOTEURS
 // ============================================
 
-// Driver 1 sur Serial1 (RX1/TX1)
+
 TMC2209Stepper driver1(&Serial1, R_SENSE, 0b00);
-// Driver 2 sur Serial2 (RX2/TX2)
 TMC2209Stepper driver2(&Serial2, R_SENSE, 0b00);
 
-// Servo object
 Servo wheelServo;
 
-// PROTOTYPES
 void setupMotors();
 void moveForward(int duration_ms);
 void diagMotor(int motorNum, TMC2209Stepper &driver);
 void servoSweepLR();
 float getUltrasonicDistance();
 
-// ============================================
-// SETUP
-// ============================================
 void setup() {
   Serial.begin(9600); 
   delay(2000);
@@ -160,11 +154,9 @@ void moveForward(int duration_ms) {
   
   while (millis() - start_time < (unsigned long)duration_ms) {
     unsigned long elapsed_ms = millis() - start_time;
-    
-    // Calculate current frequency based on acceleration ramp
+
     float current_freq = step_freq;
     if (elapsed_ms < (unsigned long)accel_time_ms) {
-      // Linear acceleration ramp
       current_freq = step_freq * (float)elapsed_ms / (float)accel_time_ms;
     }
     
@@ -181,7 +173,6 @@ void moveForward(int duration_ms) {
     }
   }
 
-  // Post-move: quick left-right sweep
   servoSweepLR();
 }
 
@@ -197,9 +188,6 @@ void diagMotor(int motorNum, TMC2209Stepper &driver) {
   }
 }
 
-// ============================================
-// SERVO SWEEP LEFT-RIGHT
-// ============================================
 void servoSweepLR() {
   // Simple left-right and back to center
   wheelServo.write(0);
@@ -210,25 +198,17 @@ void servoSweepLR() {
   delay(150);
 }
 
-// ============================================
-// ULTRASONIC DISTANCE MEASUREMENT (HC-SR04)
-// ============================================
 float getUltrasonicDistance() {
-  // Send a 10 µs pulse to trigger
   digitalWrite(US_TRIG_PIN, LOW);
   delayMicroseconds(2);
   digitalWrite(US_TRIG_PIN, HIGH);
   delayMicroseconds(10);
   digitalWrite(US_TRIG_PIN, LOW);
-//   
-//   // Measure echo pulse duration
-  long duration = pulseIn(US_ECHO_PIN, HIGH, 30000); // 30ms timeout (~5m max)
-//   
-  // Convert to distance: speed of sound = 343 m/s = 0.0343 cm/µs
-  // distance = (duration * 0.0343) / 2
+  
+  long duration = pulseIn(US_ECHO_PIN, HIGH, 30000);
+  
   float distance = (duration * 0.0343) / 2.0;
   
-  // Return 0 if no echo or distance exceeds max
   if (duration == 0) {
     return 0.0;
   }
